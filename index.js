@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 const corsOptions = {
-  origin: process.env.ALLOWED_ORIGIN,
+  origin: process.env.ALLOWED_ORIGIN.split(','),
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   credentials: true,
 };
@@ -43,6 +43,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/quiz', quizRoutes);
 app.use('/api/notifications', notificationRoutes);
+
 io.on('connection', (socket) => {
   console.log('User connected ', socket.id);
   socket.on('join', (userId) => {
@@ -53,22 +54,35 @@ io.on('connection', (socket) => {
     io.to(userId).emit('notification', notificationData);
   });
 });
-
-if (!process.env.VERCEL) {
-  mongoose
-    .connect(process.env.MONGO_URI)
-    .then(() => {
-      console.log('✅ Database connected');
-      server.listen(process.env.PORT || 3000, () => {
-        console.log(
-          `🚀 Server running on http://localhost:${process.env.PORT || 3000}`
-        );
-      });
-    })
-    .catch((err) => {
-      console.error('❌ MongoDB connection error:', err);
-      process.exit(1);
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 30000,
+      retryWrites: true,
+      w: 'majority',
     });
+    console.log('✅ MongoDB connected');
+  } catch (err) {
+    console.error('❌ MongoDB connection error:', err);
+    process.exit(1);
+  }
+};
+
+mongoose.connection.on('disconnected', () => {
+  console.log('⚠️ MongoDB disconnected! Retrying...');
+  connectDB();
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  const startServer = async () => {
+    await connectDB();
+    server.listen(process.env.PORT || 3000, () => {
+      console.log(
+        `🚀 Server running on http://localhost:${process.env.PORT || 3000}`
+      );
+    });
+  };
+  startServer();
 }
 
 export { io };
