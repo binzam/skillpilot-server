@@ -62,10 +62,12 @@ mongoose
   .connect(process.env.MONGO_URI || '')
   .then(() => {
     console.log('✅ App connected to database');
-    const url = `http://localhost:${process.env.PORT}`;
-    server.listen(process.env.PORT, () => {
-      console.log(`✅ App listening on: \x1b[32m%s\x1b[0m`, url);
-    });
+    if (require.main === module) {
+      const url = `http://localhost:${process.env.PORT}`;
+      server.listen(process.env.PORT, () => {
+        console.log(`✅ App listening on: \x1b[32m%s\x1b[0m`, url);
+      });
+    }
     // clearAllNotifications()
     // clearAllQuizes()
   })
@@ -73,4 +75,4 @@ mongoose
     console.error('Failed to connect to database:', error.message);
     process.exit(1);
   });
-export { io };
+export { server, io };
