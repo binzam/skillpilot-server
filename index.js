@@ -16,13 +16,16 @@ import { Server } from 'socket.io';
 // import { clearAllNotifications, clearAllQuizes } from './utils/resetUtils.js';
 
 const app = express();
-const server = http.createServer(app);
+
+app.use(express.json());
+app.use(cookieParser());
 const corsOptions = {
   origin: process.env.ALLOWED_ORIGIN,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   credentials: true,
 };
 app.use(cors(corsOptions));
+const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: process.env.ALLOWED_ORIGIN,
@@ -31,8 +34,6 @@ const io = new Server(server, {
   },
 });
 
-app.use(express.json());
-app.use(cookieParser());
 app.use((req, res, next) => {
   req.io = io;
   next();
