@@ -13,12 +13,11 @@ import quizRoutes from './routes/quizRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import http from 'http';
 import { Server } from 'socket.io';
-// import { clearAllNotifications, clearAllQuizes } from './utils/resetUtils.js';
 
 const app = express();
-
 app.use(express.json());
 app.use(cookieParser());
+
 const corsOptions = {
   origin: process.env.ALLOWED_ORIGIN,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
@@ -27,11 +26,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: {
-    origin: process.env.ALLOWED_ORIGIN,
-    methods: ['GET', 'POST'],
-    credentials: true,
-  },
+  cors: corsOptions,
 });
 
 app.use((req, res, next) => {
@@ -59,20 +54,22 @@ io.on('connection', (socket) => {
   });
 });
 
-mongoose
-  .connect(process.env.MONGO_URI || '')
-  .then(() => {
-    console.log('✅ App connected to database');
-      const url = `http://localhost:${process.env.PORT}`;
-      server.listen(process.env.PORT, () => {
-        console.log(`✅ App listening on: \x1b[32m%s\x1b[0m`, url);
+if (!process.env.VERCEL) {
+  mongoose
+    .connect(process.env.MONGO_URI)
+    .then(() => {
+      console.log('✅ Database connected');
+      server.listen(process.env.PORT || 3000, () => {
+        console.log(
+          `🚀 Server running on http://localhost:${process.env.PORT || 3000}`
+        );
       });
-    // clearAllNotifications()
-    // clearAllQuizes()
-  })
-  .catch((error) => {
-    console.error('Failed to connect to database:', error.message);
-    process.exit(1);
-  });
+    })
+    .catch((err) => {
+      console.error('❌ MongoDB connection error:', err);
+      process.exit(1);
+    });
+}
+
 export { io };
-export default server;
+export default app;
