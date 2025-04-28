@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
+import cors from 'cors';
 import mongoose from 'mongoose';
 import express from 'express';
 import cookieParser from 'cookie-parser';
@@ -10,13 +11,18 @@ import progressRoutes from './routes/progressRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
-import cors from 'cors';
 import http from 'http';
 import { Server } from 'socket.io';
 // import { clearAllNotifications, clearAllQuizes } from './utils/resetUtils.js';
 
 const app = express();
 const server = http.createServer(app);
+const corsOptions = {
+  origin: process.env.ALLOWED_ORIGIN,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  credentials: true,
+};
+app.use(cors(corsOptions));
 const io = new Server(server, {
   cors: {
     origin: process.env.ALLOWED_ORIGIN,
@@ -27,12 +33,6 @@ const io = new Server(server, {
 
 app.use(express.json());
 app.use(cookieParser());
-const corsOptions = {
-  origin: process.env.ALLOWED_ORIGIN,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  credentials: true,
-};
-app.use(cors(corsOptions));
 app.use((req, res, next) => {
   req.io = io;
   next();
