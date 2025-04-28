@@ -75,4 +75,5 @@ mongoose
     console.error('Failed to connect to database:', error.message);
     process.exit(1);
   });
-export { server, io };
+export { io };
+export default server;
