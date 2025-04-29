@@ -15,8 +15,8 @@ import http from 'http';
 import { Server } from 'socket.io';
 
 const app = express();
-app.use(cookieParser());
 const server = http.createServer(app);
+app.use(cookieParser());
 const io = new Server(server, {
   cors: {
     origin: process.env.ALLOWED_ORIGIN,
@@ -30,6 +30,7 @@ const corsOptions = {
   origin: process.env.ALLOWED_ORIGIN,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   credentials: true,
+  exposedHeaders: ['set-cookie'],
 };
 app.use(cors(corsOptions));
 app.use((req, res, next) => {

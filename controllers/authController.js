@@ -63,7 +63,7 @@ const loginUser = async (req, res) => {
       sameSite: 'None',
       maxAge: 15 * 60 * 1000, // 15 minutes
     });
-    res.status(200).json({
+   return res.status(200).json({
       user: {
         userId: user._id.toString(),
         username: user.username,
