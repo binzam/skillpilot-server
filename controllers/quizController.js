@@ -1,3 +1,4 @@
+import Notification from '../models/notificationModel.js';
 import QuizAttempt from '../models/quizAttemptModel.js';
 import Quiz from '../models/quizModel.js';
 const getQuizById = async (req, res) => {
@@ -66,6 +67,16 @@ const submitQuiz = async (req, res) => {
       score,
       isPassed,
     });
+    await Notification.updateMany(
+      {
+        quizId: quizId,
+        receiverUserId: userId,
+        isRead: false,
+      },
+      {
+        $set: { isRead: true },
+      }
+    );
 
     return res
       .status(201)
