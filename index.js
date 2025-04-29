@@ -17,18 +17,37 @@ import { Server } from 'socket.io';
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+const allowedOrigins = JSON.parse(
+  process.env.ALLOWED_ORIGIN
+    .replace(/'/g, '"') 
+    .replace(/\\/g, '') 
+);
 
+console.log(allowedOrigins);
 const corsOptions = {
-  origin: process.env.ALLOWED_ORIGIN.split(','),
+  origin: allowedOrigins,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   credentials: true,
 };
-app.use(cors(corsOptions));
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: corsOptions,
+  cors: {
+    origin: allowedOrigins,
+    methods: ['GET', 'POST'],
+    credentials: true
+  }
 });
-
 app.use((req, res, next) => {
   req.io = io;
   next();
@@ -54,36 +73,16 @@ io.on('connection', (socket) => {
     io.to(userId).emit('notification', notificationData);
   });
 });
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      serverSelectionTimeoutMS: 30000,
-      retryWrites: true,
-      w: 'majority',
-    });
-    console.log('✅ MongoDB connected');
-  } catch (err) {
-    console.error('❌ MongoDB connection error:', err);
-    process.exit(1);
-  }
-};
 
-mongoose.connection.on('disconnected', () => {
-  console.log('⚠️ MongoDB disconnected! Retrying...');
-  connectDB();
-});
-
-if (process.env.NODE_ENV !== 'production') {
-  const startServer = async () => {
-    await connectDB();
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => {
     server.listen(process.env.PORT || 3000, () => {
-      console.log(
-        `🚀 Server running on http://localhost:${process.env.PORT || 3000}`
-      );
+      console.log(`🚀 Server running on port ${process.env.PORT || 3000}`);
     });
-  };
-  startServer();
-}
-
+  })
+  .catch((error) => {
+    console.error('Failed to connect to database:', error.message);
+    process.exit(1);
+  });
 export { io };
-export default app;
