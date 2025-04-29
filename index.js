@@ -15,6 +15,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 
 const app = express();
+app.use(cookieParser());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -25,7 +26,6 @@ const io = new Server(server, {
 });
 
 app.use(express.json());
-app.use(cookieParser());
 const corsOptions = {
   origin: process.env.ALLOWED_ORIGIN,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
