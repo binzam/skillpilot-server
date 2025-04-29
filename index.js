@@ -15,39 +15,23 @@ import http from 'http';
 import { Server } from 'socket.io';
 
 const app = express();
-app.use(express.json());
-app.use(cookieParser());
-const allowedOrigins = JSON.parse(
-  process.env.ALLOWED_ORIGIN
-    .replace(/'/g, '"') 
-    .replace(/\\/g, '') 
-);
-
-console.log(allowedOrigins);
-const corsOptions = {
-  origin: allowedOrigins,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  credentials: true,
-};
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: process.env.ALLOWED_ORIGIN,
     methods: ['GET', 'POST'],
-    credentials: true
-  }
+    credentials: true,
+  },
 });
+
+app.use(express.json());
+app.use(cookieParser());
+const corsOptions = {
+  origin: process.env.ALLOWED_ORIGIN,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  credentials: true,
+};
+app.use(cors(corsOptions));
 app.use((req, res, next) => {
   req.io = io;
   next();
