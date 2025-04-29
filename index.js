@@ -57,9 +57,8 @@ io.on('connection', (socket) => {
     io.to(userId).emit('notification', notificationData);
   });
 });
-
 mongoose
-  .connect(`${process.env.MONGO_URI}`)
+  .connect(process.env.MONGO_URI)
   .then(() => {
     server.listen(process.env.PORT || 3000, () => {
       console.log(`🚀 Server running on port ${process.env.PORT || 3000}`);
