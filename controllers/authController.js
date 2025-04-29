@@ -53,14 +53,14 @@ const loginUser = async (req, res) => {
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: false,
+      sameSite: 'None',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: false,
+      sameSite: 'None',
       maxAge: 15 * 60 * 1000, // 15 minutes
     });
     res.status(200).json({
@@ -113,13 +113,13 @@ const registerUser = async (req, res) => {
 const logoutUser = async (req, res) => {
   res.clearCookie('refreshToken', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: false,
+    sameSite: 'None',
   });
   res.clearCookie('accessToken', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: false,
+    sameSite: 'None',
   });
 
   res.status(200).json({ success: true });
@@ -153,15 +153,15 @@ const refreshAccessToken = async (req, res) => {
     // Set new cookies (rotating refresh token)
     res.cookie('accessToken', newAccessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: false,
+      sameSite: 'None',
       maxAge: 15 * 60 * 1000, // 15 minutes
     });
 
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: false,
+      sameSite: 'None',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
